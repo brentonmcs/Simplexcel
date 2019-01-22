@@ -20,6 +20,9 @@
         /// </summary>
         Date,
 
+        /// <summary>
+        /// Cell contains a formula
+        /// </summary>
         Formula
     }
 }

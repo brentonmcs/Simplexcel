@@ -46,6 +46,7 @@ namespace Simplexcel
             }
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -54,6 +55,7 @@ namespace Simplexcel
             return Equals((PatternFill)obj);
         }
 
+        /// <inheritdoc />
         public bool Equals(PatternFill other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -63,6 +65,7 @@ namespace Simplexcel
                 && Equals(other.BackgroundColor, BackgroundColor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             unchecked
@@ -80,11 +83,23 @@ namespace Simplexcel
             }
         }
 
+        /// <summary>
+        /// Handles equals
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
         public static bool operator ==(PatternFill left, PatternFill right)
         {
             return Equals(left, right);
         }
-
+        
+        /// <summary>
+        /// Handles not equal to
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
         public static bool operator !=(PatternFill left, PatternFill right)
         {
             return !Equals(left, right);

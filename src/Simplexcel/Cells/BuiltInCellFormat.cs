@@ -49,5 +49,10 @@
         /// h:mm
         /// </summary>
         public const string TimeOnly = "h:mm";
+
+        /// <summary>
+        /// accounting
+        /// </summary>
+        public const string Accounting = "\"$\"#,##0.00_);[Red](\"$\"#,##0.00)";
     }
 }
