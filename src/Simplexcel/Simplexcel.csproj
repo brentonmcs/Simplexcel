@@ -22,6 +22,9 @@
     <IncludeSymbols>true</IncludeSymbols>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <IsTestProject>false</IsTestProject>
+    <SonarQubeExclude>true</SonarQubeExclude>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard13'">

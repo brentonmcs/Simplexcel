@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 using System.Xml.Linq;
-using System.Text.RegularExpressions;
 
 namespace Simplexcel.XlsxInternal
 {

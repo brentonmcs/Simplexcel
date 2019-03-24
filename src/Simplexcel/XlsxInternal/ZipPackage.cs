@@ -102,16 +102,16 @@ namespace Simplexcel.XlsxInternal
         private void WriteContentTypes()
         {
             CheckClosed();
-            const string defaultXmlContentType = "application/xml";
+            const string DefaultXmlContentType = "application/xml";
             var root = new XElement(Namespaces.contenttypes + "Types");
-            root.Add(new XElement(Namespaces.contenttypes + "Default", new XAttribute("Extension", "xml"), new XAttribute("ContentType", defaultXmlContentType)));
+            root.Add(new XElement(Namespaces.contenttypes + "Default", new XAttribute("Extension", "xml"), new XAttribute("ContentType", DefaultXmlContentType)));
             root.Add(new XElement(Namespaces.contenttypes + "Default", new XAttribute("Extension", "rels"), new XAttribute("ContentType", "application/vnd.openxmlformats-package.relationships+xml")));
 
             foreach (var ct in _contentTypes)
             {
                 if (string.Equals(Path.GetExtension(ct.Key), ".xml", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!string.Equals(ct.Value, defaultXmlContentType))
+                    if (!string.Equals(ct.Value, DefaultXmlContentType))
                     {
                         var ovr = new XElement(Namespaces.contenttypes + "Override");
                         ovr.Add(new XAttribute("PartName", ct.Key));

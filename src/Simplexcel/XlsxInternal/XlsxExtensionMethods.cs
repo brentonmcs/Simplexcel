@@ -60,6 +60,7 @@ namespace Simplexcel.XlsxInternal
             const int DaysTo1899 = DaysPer400Years * 4 + DaysPer100Years * 3 - 367;
 
             const long DoubleDateOffset = DaysTo1899 * TicksPerDay;
+            // ReSharper disable once InconsistentNaming
             const long OADateMinAsTicks = (DaysPer100Years - DaysPerYear) * TicksPerDay;
 
             if (value == 0)
