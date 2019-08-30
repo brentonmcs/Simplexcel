@@ -31,11 +31,8 @@ namespace Simplexcel
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                int result = Stops.GetCollectionHashCode();
-                return result;
-            }
+            var result = Stops.GetCollectionHashCode();
+            return result;
         }
 
         public static bool operator ==(GradientFill left, GradientFill right)

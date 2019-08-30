@@ -1,6 +1,8 @@
 ﻿using System;
 
-namespace Simplexcel
+#pragma warning disable 1584,1581,1580
+
+namespace Simplexcel.Cells
 {
     /// <summary>
     /// Used with <see cref="Worksheet.Populate"/> or <see cref="Worksheet.FromData"/>, allows setting how object properties are handled.
