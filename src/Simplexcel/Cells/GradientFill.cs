@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Simplexcel
+namespace Simplexcel.Cells
 {
     // TODO: Not Yet Implemented
     internal class GradientFill : IEquatable<GradientFill>

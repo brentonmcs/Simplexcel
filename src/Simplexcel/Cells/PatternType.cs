@@ -1,4 +1,4 @@
-﻿namespace Simplexcel
+﻿namespace Simplexcel.Cells
 {
     /// <summary>
     /// The Type of the pattern in a <see cref="PatternFill"/>.

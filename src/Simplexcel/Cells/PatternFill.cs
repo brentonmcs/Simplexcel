@@ -1,6 +1,7 @@
 ﻿using System;
+// ReSharper disable NonReadonlyMemberInGetHashCode
 
-namespace Simplexcel
+namespace Simplexcel.Cells
 {
     /// <summary>
     /// A Pattern Fill of a Cell.
@@ -10,7 +11,7 @@ namespace Simplexcel
         // TODO: Add a Gradient Fill to this.
         // This isn't the structure in the XML, but that's how Excel Presents it, as a "Fill Effect"
 
-        bool firstTimeSet = false;
+        private bool _firstTimeSet;
         private Color? _bgColor;
 
         /// <summary>
@@ -37,11 +38,11 @@ namespace Simplexcel
 
                 // PatternType defaults to None, but the first time we set a background color,
                 // set it to solid as the user likely wants the background color to show.
-                // Further modifications won't change the PatternType, as this is now a delibrate setting
-                if (_bgColor.HasValue && PatternType == PatternType.None && !firstTimeSet)
+                // Further modifications won't change the PatternType, as this is now a deliberate setting
+                if (_bgColor.HasValue && PatternType == PatternType.None && !_firstTimeSet)
                 {
                     PatternType = PatternType.Solid;
-                    firstTimeSet = true;
+                    _firstTimeSet = true;
                 }
             }
         }
@@ -70,7 +71,7 @@ namespace Simplexcel
         {
             unchecked
             {
-                int result = PatternType.GetHashCode();
+                var result = PatternType.GetHashCode();
                 if (PatternColor.HasValue)
                 {
                     result = (result * 397) ^ PatternColor.GetHashCode();

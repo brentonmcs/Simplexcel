@@ -1,7 +1,7 @@
 ﻿using System;
 using Simplexcel.XlsxInternal;
 
-namespace Simplexcel
+namespace Simplexcel.Cells
 {
     /// <summary>
     /// A cell inside a Worksheet
@@ -135,6 +135,14 @@ namespace Simplexcel
             set { XlsxCellStyle.VerticalAlignment = value; }
         }
 
+        /// <summary>
+        /// Sets the Text to be Wrapped to new line
+        /// </summary>
+        public bool WrapText
+        {
+            get => XlsxCellStyle.WrapText;
+            set => XlsxCellStyle.WrapText = value;
+        }
         /// <summary>
         /// Any errors that are ignored in this Cell
         /// </summary>

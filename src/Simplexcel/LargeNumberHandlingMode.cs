@@ -1,4 +1,6 @@
-﻿namespace Simplexcel
+﻿using Simplexcel.Cells;
+
+namespace Simplexcel
 {
     /// <summary>
     /// Excel doesn't want to display large numbers (more than 11 digits) properly:

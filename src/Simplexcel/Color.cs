@@ -1,10 +1,48 @@
+// ReSharper disable UnusedMember.Global
+// ReSharper disable CommentTypo
 namespace Simplexcel
 {
     /// <summary>
     /// Specify a Color, as System.Drawing.Color isn't used.
     /// </summary>
-    public struct Color
+    public struct Color 
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(Color other)
+        {
+            return R == other.R && G == other.G && B == other.B && A == other.A;
+        }
+
+        /// <summary>
+        /// Equality Check
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            return obj is Color other && Equals(other);
+        }
+
+        /// <summary>
+        /// Get Hash Code for Color
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = R.GetHashCode();
+                hashCode = (hashCode * 397) ^ G.GetHashCode();
+                hashCode = (hashCode * 397) ^ B.GetHashCode();
+                hashCode = (hashCode * 397) ^ A.GetHashCode();
+                return hashCode;
+            }
+        }
+
         /// <summary>
         /// The Red component of the Color
         /// </summary>

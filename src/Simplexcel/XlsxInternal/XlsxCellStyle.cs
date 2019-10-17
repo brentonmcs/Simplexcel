@@ -1,4 +1,6 @@
 ﻿using System;
+using Simplexcel.Cells;
+// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace Simplexcel.XlsxInternal
 {
@@ -22,6 +24,8 @@ namespace Simplexcel.XlsxInternal
         internal VerticalAlign VerticalAlignment { get; set; }
 
         internal HorizontalAlign HorizontalAlignment { get; set; }
+        
+        internal bool WrapText { get; set; }
 
         internal PatternFill Fill { get; set; }
 
@@ -53,6 +57,7 @@ namespace Simplexcel.XlsxInternal
                 && other.Format.Equals(Format)
                 && Equals(other.VerticalAlignment, VerticalAlignment)
                 && Equals(other.HorizontalAlignment, HorizontalAlignment)
+                && Equals(other.WrapText, WrapText)
                 && Equals(other.Fill, Fill)
                 ;
         }
@@ -67,6 +72,7 @@ namespace Simplexcel.XlsxInternal
                 result = (result * 397) ^ VerticalAlignment.GetHashCode();
                 result = (result * 397) ^ HorizontalAlignment.GetHashCode();
                 result = (result * 397) ^ Fill.GetHashCode();
+                result = (result * 397) ^ WrapText.GetHashCode();
                 return result;
             }
         }

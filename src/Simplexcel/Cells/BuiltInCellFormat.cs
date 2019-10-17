@@ -1,4 +1,5 @@
-﻿namespace Simplexcel
+﻿// ReSharper disable InconsistentNaming
+namespace Simplexcel.Cells
 {
     /// <summary>
     /// Excel Built-In Cell formats

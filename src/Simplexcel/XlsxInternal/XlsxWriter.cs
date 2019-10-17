@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Simplexcel.Cells;
+// ReSharper disable StringLiteralTypo
 
 namespace Simplexcel.XlsxInternal
 {
@@ -17,7 +19,8 @@ namespace Simplexcel.XlsxInternal
         {
             if (workbook.SheetCount == 0)
             {
-                throw new InvalidOperationException("You are trying to save a Workbook that does not contain any Worksheets.");
+                throw new InvalidOperationException(
+                    "You are trying to save a Workbook that does not contain any Worksheets.");
             }
 
             XlsxWriterInternal.Save(workbook, outputStream, compress);
@@ -33,6 +36,7 @@ namespace Simplexcel.XlsxInternal
             // For some reason, Excel interprets column widths as the width minus this factor
             private const decimal ExcelColumnWidthDifference = 0.7109375m;
 
+            // ReSharper disable once MemberHidesStaticFromOuterClass
             internal static void Save(Workbook workbook, Stream outputStream, bool compress)
             {
                 var relationshipCounter = new RelationshipCounter();
@@ -63,12 +67,13 @@ namespace Simplexcel.XlsxInternal
                 package.WorkbookRelationships.Add(stylesRel);
 
                 // xl/worksheets/sheetX.xml
-                var sheetinfos = new List<SheetPackageInfo>();
-                int i = 0;
+                var sheetPackageInfos = new List<SheetPackageInfo>();
+                var i = 0;
                 foreach (var sheet in workbook.Sheets)
                 {
                     i++;
-                    var rel = CreateSheetFile(sheet, i, relationshipCounter, styles, ignoredErrors[sheet], sharedStrings, out XmlFile sheetRels);
+                    var rel = CreateSheetFile(sheet, i, relationshipCounter, styles, ignoredErrors[sheet],
+                        sharedStrings, out var sheetRels);
                     if (sheetRels != null)
                     {
                         package.XmlFiles.Add(sheetRels);
@@ -77,7 +82,7 @@ namespace Simplexcel.XlsxInternal
                     package.XmlFiles.Add(rel.Target);
                     package.WorkbookRelationships.Add(rel);
 
-                    var sheetinfo = new SheetPackageInfo
+                    var sheetPackageInfo = new SheetPackageInfo
                     {
                         RelationshipId = rel.Id,
                         SheetId = i,
@@ -85,14 +90,16 @@ namespace Simplexcel.XlsxInternal
                     };
                     if (sheet.PageSetup.PrintRepeatColumns > 0)
                     {
-                        sheetinfo.RepeatCols = "'" + sheet.Name + "'!$A:$" + CellAddressHelper.ColToReference(sheet.PageSetup.PrintRepeatColumns - 1);
-                    }
-                    if (sheet.PageSetup.PrintRepeatRows > 0)
-                    {
-                        sheetinfo.RepeatRows = "'" + sheet.Name + "'!$1:$" + sheet.PageSetup.PrintRepeatRows;
+                        sheetPackageInfo.RepeatCols = "'" + sheet.Name + "'!$A:$" +
+                                               CellAddressHelper.ColToReference(sheet.PageSetup.PrintRepeatColumns - 1);
                     }
 
-                    sheetinfos.Add(sheetinfo);
+                    if (sheet.PageSetup.PrintRepeatRows > 0)
+                    {
+                        sheetPackageInfo.RepeatRows = "'" + sheet.Name + "'!$1:$" + sheet.PageSetup.PrintRepeatRows;
+                    }
+
+                    sheetPackageInfos.Add(sheetPackageInfo);
                 }
 
                 // xl/sharedStrings.xml
@@ -104,7 +111,7 @@ namespace Simplexcel.XlsxInternal
                 }
 
                 // xl/workbook.xml
-                var wb = CreateWorkbookFile(sheetinfos, relationshipCounter);
+                var wb = CreateWorkbookFile(sheetPackageInfos, relationshipCounter);
                 package.XmlFiles.Add(wb.Target);
                 package.Relationships.Add(wb);
 
@@ -121,7 +128,8 @@ namespace Simplexcel.XlsxInternal
             /// <param name="workbook"></param>
             /// <param name="styles">All unique Styles throughout the workbook</param>
             /// <param name="ignoredErrors">Any ignored errors. Key is the Worksheet, and the inner dictionary key is the cell range</param>
-            private static void ExtractWorkbookSpecialXmlParts(Workbook workbook, out IList<XlsxCellStyle> styles, out IDictionary<Worksheet, XlsxIgnoredErrorCollection> ignoredErrors)
+            private static void ExtractWorkbookSpecialXmlParts(Workbook workbook, out IList<XlsxCellStyle> styles,
+                out IDictionary<Worksheet, XlsxIgnoredErrorCollection> ignoredErrors)
             {
                 styles = new List<XlsxCellStyle>();
                 ignoredErrors = new Dictionary<Worksheet, XlsxIgnoredErrorCollection>();
@@ -132,18 +140,19 @@ namespace Simplexcel.XlsxInternal
                     {
                         ignoredErrors[sheet] = new XlsxIgnoredErrorCollection();
                     }
+
                     var sie = ignoredErrors[sheet];
 
-                    foreach (var cpair in sheet.Cells)
+                    foreach (var cellPair in sheet.Cells)
                     {
-                        var cell = cpair.Value;
+                        var cell = cellPair.Value;
 
                         if (!styles.Contains(cell.XlsxCellStyle))
                         {
                             styles.Add(cell.XlsxCellStyle);
                         }
 
-                        sie.AddIgnoredError(cpair.Key, cell.IgnoredErrors);
+                        sie.AddIgnoredError(cellPair.Key, cell.IgnoredErrors);
                     }
                 }
             }
@@ -152,7 +161,8 @@ namespace Simplexcel.XlsxInternal
             /// Generated the docProps/core.xml which contains author, creation date etc.
             /// </summary>
             /// <returns></returns>
-            private static Relationship CreateCoreFileProperties(Workbook workbook, RelationshipCounter relationshipCounter)
+            private static Relationship CreateCoreFileProperties(Workbook workbook,
+                RelationshipCounter relationshipCounter)
             {
                 var file = new XmlFile
                 {
@@ -167,24 +177,27 @@ namespace Simplexcel.XlsxInternal
 
                 var doc = new XDocument();
                 var root = new XElement(cp + "coreProperties",
-                                new XAttribute(XNamespace.Xmlns + "cp", cp),
-                                new XAttribute(XNamespace.Xmlns + "dc", dc),
-                                new XAttribute(XNamespace.Xmlns + "dcterms", dcterms),
-                                new XAttribute(XNamespace.Xmlns + "xsi", xsi)
-                                );
+                    new XAttribute(XNamespace.Xmlns + "cp", cp),
+                    new XAttribute(XNamespace.Xmlns + "dc", dc),
+                    new XAttribute(XNamespace.Xmlns + "dcterms", dcterms),
+                    new XAttribute(XNamespace.Xmlns + "xsi", xsi)
+                );
 
                 if (!string.IsNullOrEmpty(workbook.Title))
                 {
                     root.Add(new XElement(dc + "title", workbook.Title));
                 }
+
                 if (!string.IsNullOrEmpty(workbook.Author))
                 {
                     root.Add(new XElement(dc + "creator", workbook.Author));
                     root.Add(new XElement(cp + "lastModifiedBy", workbook.Author));
                 }
 
-                root.Add(new XElement(dcterms + "created", DateTime.UtcNow, new XAttribute(xsi + "type", "dcterms:W3CDTF")));
-                root.Add(new XElement(dcterms + "modified", DateTime.UtcNow, new XAttribute(xsi + "type", "dcterms:W3CDTF")));
+                root.Add(new XElement(dcterms + "created", DateTime.UtcNow,
+                    new XAttribute(xsi + "type", "dcterms:W3CDTF")));
+                root.Add(new XElement(dcterms + "modified", DateTime.UtcNow,
+                    new XAttribute(xsi + "type", "dcterms:W3CDTF")));
 
 
                 doc.Add(root);
@@ -206,7 +219,8 @@ namespace Simplexcel.XlsxInternal
             /// <param name="sheetInfos"></param>
             /// <param name="relationshipCounter"></param>
             /// <returns></returns>
-            private static Relationship CreateWorkbookFile(List<SheetPackageInfo> sheetInfos, RelationshipCounter relationshipCounter)
+            private static Relationship CreateWorkbookFile(List<SheetPackageInfo> sheetInfos,
+                RelationshipCounter relationshipCounter)
             {
                 var file = new XmlFile
                 {
@@ -215,23 +229,25 @@ namespace Simplexcel.XlsxInternal
                 };
 
                 var doc = new XDocument(new XElement(Namespaces.workbook + "workbook",
-                        new XAttribute("xmlns", Namespaces.workbook),
-                        new XAttribute(XNamespace.Xmlns + "r", Namespaces.workbookRelationship)
-                    ));
+                    new XAttribute("xmlns", Namespaces.workbook),
+                    new XAttribute(XNamespace.Xmlns + "r", Namespaces.workbookRelationship)
+                ));
 
                 var sheets = new XElement(Namespaces.workbook + "sheets");
                 foreach (var si in sheetInfos)
                 {
                     sheets.Add(new XElement(Namespaces.workbook + "sheet",
-                                        new XAttribute("name", si.SheetName),
-                                        new XAttribute("sheetId", si.SheetId),
-                                        new XAttribute(Namespaces.workbookRelationship + "id", si.RelationshipId)
-                                        ));
+                        new XAttribute("name", si.SheetName),
+                        new XAttribute("sheetId", si.SheetId),
+                        new XAttribute(Namespaces.workbookRelationship + "id", si.RelationshipId)
+                    ));
                 }
 
-                doc.Root.Add(sheets);
+                doc.Root?.Add(sheets);
 
-                var repeatInfos = sheetInfos.Where(si => !string.IsNullOrEmpty(si.RepeatRows) || !string.IsNullOrEmpty(si.RepeatCols)).OrderBy(si => si.SheetId).ToList();
+                var repeatInfos = sheetInfos
+                    .Where(si => !string.IsNullOrEmpty(si.RepeatRows) || !string.IsNullOrEmpty(si.RepeatCols))
+                    .OrderBy(si => si.SheetId).ToList();
                 if (repeatInfos.Count > 0)
                 {
                     var dne = new XElement(Namespaces.workbook + "definedNames");
@@ -257,7 +273,8 @@ namespace Simplexcel.XlsxInternal
 
                         dne.Add(de);
                     }
-                    doc.Root.Add(dne);
+
+                    doc.Root?.Add(dne);
                 }
 
                 file.Content = doc;
@@ -273,21 +290,26 @@ namespace Simplexcel.XlsxInternal
 
             private static void WriteSheetViews(Worksheet sheet, XDocument doc)
             {
-                var sviews = sheet.GetSheetViews();
-                if (sviews == null || sviews.Count == 0) { return; }
+                var views = sheet.GetSheetViews();
+                if (views == null || views.Count == 0)
+                {
+                    return;
+                }
 
                 var sheetViews = new XElement(Namespaces.workbook + "sheetViews");
-                foreach (var sv in sviews)
+                foreach (var sv in views)
                 {
                     var sheetView = new XElement(Namespaces.workbook + "sheetView");
                     if (sv.ShowRuler.HasValue)
                     {
                         sheetView.Add(new XAttribute("showRuler", sv.ShowRuler.Value ? "1" : "0"));
                     }
+
                     if (sv.TabSelected.HasValue)
                     {
                         sheetView.Add(new XAttribute("tabSelected", sv.TabSelected.Value ? "1" : "0"));
                     }
+
                     // TODO: Consider adding a <bookViews> element to the workbook
                     sheetView.Add(new XAttribute("workbookViewId", sv.WorkbookViewId));
 
@@ -299,22 +321,27 @@ namespace Simplexcel.XlsxInternal
                         {
                             paneElem.Add(new XAttribute("xSplit", p.XSplit.Value));
                         }
+
                         if (p.YSplit.HasValue && p.YSplit.Value != Pane.DefaultYSplit)
                         {
                             paneElem.Add(new XAttribute("ySplit", p.YSplit.Value));
                         }
+
                         if (p.ActivePane.HasValue)
                         {
                             paneElem.Add(new XAttribute("activePane", p.ActivePane.Value.GetXmlValue()));
                         }
+
                         if (!string.IsNullOrEmpty(p.TopLeftCell))
                         {
                             paneElem.Add(new XAttribute("topLeftCell", p.TopLeftCell));
                         }
+
                         if (p.State.HasValue)
                         {
                             paneElem.Add(new XAttribute("state", p.State.Value.GetXmlValue()));
                         }
+
                         sheetView.Add(paneElem);
                     }
 
@@ -325,13 +352,15 @@ namespace Simplexcel.XlsxInternal
                         {
                             selElem.Add(new XAttribute("activeCell", sel.ActiveCell));
                         }
+
                         selElem.Add(new XAttribute("pane", sel.ActivePane.GetXmlValue()));
                         sheetView.Add(selElem);
                     }
+
                     sheetViews.Add(sheetView);
                 }
 
-                doc.Root.Add(sheetViews);
+                doc.Root?.Add(sheetViews);
             }
 
             private static void WritePageBreaks(Worksheet sheet, XDocument doc)
@@ -344,18 +373,22 @@ namespace Simplexcel.XlsxInternal
                     {
                         elem.Add(new XAttribute("man", "1"));
                     }
+
                     if (brk.IsPivotCreatedPageBreak)
                     {
                         elem.Add(new XAttribute("pt", "1"));
                     }
+
                     if (brk.Min > 0)
                     {
                         elem.Add(new XAttribute("min", brk.Min));
                     }
+
                     if (brk.Max > 0)
                     {
                         elem.Add(new XAttribute("max", brk.Max));
                     }
+
                     return elem;
                 }
 
@@ -368,6 +401,7 @@ namespace Simplexcel.XlsxInternal
                     {
                         elem.Add(BreakToXml(brk));
                     }
+
                     return elem;
                 }
 
@@ -375,20 +409,20 @@ namespace Simplexcel.XlsxInternal
                 if (rowBreaks != null && rowBreaks.Count > 0)
                 {
                     var rowBreaksElem = PageBreakCollectionToXml("rowBreaks", rowBreaks);
-                    doc.Root.Add(rowBreaksElem);
+                    doc.Root?.Add(rowBreaksElem);
                 }
 
                 var colBreaks = sheet.GetColumnBreaks();
                 if (colBreaks != null && colBreaks.Count > 0)
                 {
                     var colBreaksElem = PageBreakCollectionToXml("colBreaks", colBreaks);
-                    doc.Root.Add(colBreaksElem);
+                    doc.Root?.Add(colBreaksElem);
                 }
             }
 
             private static void HandleLargeNumbers(Worksheet sheet)
             {
-                if(sheet == null)
+                if (sheet == null)
                 {
                     throw new ArgumentNullException(nameof(sheet));
                 }
@@ -402,22 +436,33 @@ namespace Simplexcel.XlsxInternal
                 {
                     foreach (var cellPair in sheet.Cells)
                     {
-                        if (cellPair.Value.CellType != CellType.Number) { continue; }
+                        if (cellPair.Value.CellType != CellType.Number)
+                        {
+                            continue;
+                        }
+
                         var cell = cellPair.Value;
-                        var numVal = (Decimal)cell.Value;
-                        if (!Cell.IsLargeNumber(numVal)) { continue; }
+
+                        var numVal = Convert.ToDecimal(cell.Value);
+                        if (!Cell.IsLargeNumber(numVal))
+                        {
+                            continue;
+                        }
 
                         cell.Format = BuiltInCellFormat.General;
                         if (cell.HorizontalAlignment == HorizontalAlign.None)
                         {
                             cell.HorizontalAlignment = HorizontalAlign.Right;
                         }
+
                         cell.IgnoredErrors.NumberStoredAsText = true;
                     }
+
                     return;
                 }
 
-                throw new InvalidOperationException($"Unhandled LargeNumberHandlingMode in sheet {sheet.Name}: {sheet.LargeNumberHandlingMode}");
+                throw new InvalidOperationException(
+                    $"Unhandled LargeNumberHandlingMode in sheet {sheet.Name}: {sheet.LargeNumberHandlingMode}");
             }
 
             /// <summary>
@@ -431,7 +476,9 @@ namespace Simplexcel.XlsxInternal
             /// <param name="sharedStrings"></param>
             /// <param name="sheetRels">If this worksheet needs an xl/worksheets/_rels/sheetX.xml.rels file</param>
             /// <returns></returns>
-            private static Relationship CreateSheetFile(Worksheet sheet, int sheetIndex, RelationshipCounter relationshipCounter, IList<XlsxCellStyle> styles, XlsxIgnoredErrorCollection ignoredErrors, SharedStrings sharedStrings, out XmlFile sheetRels)
+            private static Relationship CreateSheetFile(Worksheet sheet, int sheetIndex,
+                RelationshipCounter relationshipCounter, IList<XlsxCellStyle> styles,
+                XlsxIgnoredErrorCollection ignoredErrors, SharedStrings sharedStrings, out XmlFile sheetRels)
             {
                 var rows = GetXlsxRows(sheet, styles, sharedStrings);
 
@@ -454,7 +501,7 @@ namespace Simplexcel.XlsxInternal
 
                 var sheetFormatPr = new XElement(Namespaces.workbook + "sheetFormatPr");
                 sheetFormatPr.Add(new XAttribute("defaultRowHeight", 15));
-                doc.Root.Add(sheetFormatPr);
+                doc.Root?.Add(sheetFormatPr);
 
                 if (sheet.ColumnWidths.Any())
                 {
@@ -465,11 +512,12 @@ namespace Simplexcel.XlsxInternal
                         var col = new XElement(Namespaces.workbook + "col",
                             new XAttribute("min", rowId),
                             new XAttribute("max", rowId),
-                            new XAttribute("width", (decimal)cw.Value + ExcelColumnWidthDifference),
+                            new XAttribute("width", (decimal) cw.Value + ExcelColumnWidthDifference),
                             new XAttribute("customWidth", 1));
                         cols.Add(col);
                     }
-                    doc.Root.Add(cols);
+
+                    doc.Root?.Add(cols);
                 }
 
                 var sheetData = new XElement(Namespaces.workbook + "sheetData");
@@ -483,23 +531,21 @@ namespace Simplexcel.XlsxInternal
                             new XAttribute("t", cell.CellType),
                             new XAttribute("s", cell.StyleIndex));
 
-                        if (cell.CellType == XlsxCellTypes.FormulaString)
-                        {
-                            ce.Add(new XElement(Namespaces.workbook + "f", cell.Value));
-                        }
-                        else
-                        {
-                            ce.Add(new XElement(Namespaces.workbook + "v", cell.Value));
-                        }
+                        ce.Add(cell.CellType == XlsxCellTypes.FormulaString
+                            ? new XElement(Namespaces.workbook + "f", cell.Value)
+                            : new XElement(Namespaces.workbook + "v", cell.Value));
 
                         re.Add(ce);
                     }
+
                     sheetData.Add(re);
                 }
-                doc.Root.Add(sheetData);
+
+                doc.Root?.Add(sheetData);
 
                 sheetRels = null;
-                var hyperlinks = sheet.Cells.Where(c => c.Value != null && !string.IsNullOrEmpty(c.Value.Hyperlink)).ToList();
+                var hyperlinks = sheet.Cells.Where(c => c.Value != null && !string.IsNullOrEmpty(c.Value.Hyperlink))
+                    .ToList();
                 if (hyperlinks.Count > 0)
                 {
                     sheetRels = new XmlFile
@@ -517,25 +563,28 @@ namespace Simplexcel.XlsxInternal
 
                         var link = hyperlinks[i];
                         var linkElem = new XElement(Namespaces.workbook + "hyperlink",
-                                                    new XAttribute("ref", link.Key.ToString()),
-                                                    new XAttribute(Namespaces.officeRelationships + "id", hyperLinkRelId)
-                                );
+                            new XAttribute("ref", link.Key.ToString()),
+                            new XAttribute(Namespaces.officeRelationships + "id", hyperLinkRelId)
+                        );
                         hlElem.Add(linkElem);
 
                         hlRelsElem.Add(new XElement(Namespaces.relationship + "Relationship",
                             new XAttribute("Id", hyperLinkRelId),
-                            new XAttribute("Type", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"),
+                            new XAttribute("Type",
+                                "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"),
                             new XAttribute("Target", link.Value.Hyperlink),
                             new XAttribute("TargetMode", "External")));
                     }
-                    doc.Root.Add(hlElem);
+
+                    doc.Root?.Add(hlElem);
                     sheetRels.Content = new XDocument();
                     sheetRels.Content.Add(hlRelsElem);
                 }
 
                 var pageSetup = new XElement(Namespaces.workbook + "pageSetup");
-                pageSetup.Add(new XAttribute("orientation", sheet.PageSetup.Orientation == Orientation.Portrait ? "portrait" : "landscape"));
-                doc.Root.Add(pageSetup);
+                pageSetup.Add(new XAttribute("orientation",
+                    sheet.PageSetup.Orientation == Orientation.Portrait ? "portrait" : "landscape"));
+                doc.Root?.Add(pageSetup);
 
                 WritePageBreaks(sheet, doc);
                 WriteIgnoredErrors(ignoredErrors, doc);
@@ -552,8 +601,15 @@ namespace Simplexcel.XlsxInternal
 
             private static void WriteIgnoredErrors(XlsxIgnoredErrorCollection ignoredErrors, XDocument doc)
             {
-                if (ignoredErrors == null) { throw new ArgumentNullException(nameof(ignoredErrors)); }
-                if (doc == null) { throw new ArgumentNullException(nameof(doc)); }
+                if (ignoredErrors == null)
+                {
+                    throw new ArgumentNullException(nameof(ignoredErrors));
+                }
+
+                if (doc == null)
+                {
+                    throw new ArgumentNullException(nameof(doc));
+                }
 
                 if (ignoredErrors.DistinctIgnoredErrors.Count == 0)
                 {
@@ -567,27 +623,65 @@ namespace Simplexcel.XlsxInternal
                     var elem = new XElement(Namespaces.workbook + "ignoredError");
                     elem.Add(new XAttribute("sqref", ie.GetSqRef()));
 
-                    if (ie.IgnoredError.EvalError) { elem.Add(new XAttribute("evalError", 1)); }
-                    if (ie.IgnoredError.TwoDigitTextYear) { elem.Add(new XAttribute("twoDigitTextYear", 1)); }
-                    if (ie.IgnoredError.NumberStoredAsText) { elem.Add(new XAttribute("numberStoredAsText", 1)); }
-                    if (ie.IgnoredError.Formula) { elem.Add(new XAttribute("formula", 1)); }
-                    if (ie.IgnoredError.FormulaRange) { elem.Add(new XAttribute("formulaRange", 1)); }
-                    if (ie.IgnoredError.UnlockedFormula) { elem.Add(new XAttribute("unlockedFormula", 1)); }
-                    if (ie.IgnoredError.EmptyCellReference) { elem.Add(new XAttribute("emptyCellReference", 1)); }
-                    if (ie.IgnoredError.ListDataValidation) { elem.Add(new XAttribute("listDataValidation", 1)); }
-                    if (ie.IgnoredError.CalculatedColumn) { elem.Add(new XAttribute("calculatedColumn", 1)); }
+                    if (ie.IgnoredError.EvalError)
+                    {
+                        elem.Add(new XAttribute("evalError", 1));
+                    }
+
+                    if (ie.IgnoredError.TwoDigitTextYear)
+                    {
+                        elem.Add(new XAttribute("twoDigitTextYear", 1));
+                    }
+
+                    if (ie.IgnoredError.NumberStoredAsText)
+                    {
+                        elem.Add(new XAttribute("numberStoredAsText", 1));
+                    }
+
+                    if (ie.IgnoredError.Formula)
+                    {
+                        elem.Add(new XAttribute("formula", 1));
+                    }
+
+                    if (ie.IgnoredError.FormulaRange)
+                    {
+                        elem.Add(new XAttribute("formulaRange", 1));
+                    }
+
+                    if (ie.IgnoredError.UnlockedFormula)
+                    {
+                        elem.Add(new XAttribute("unlockedFormula", 1));
+                    }
+
+                    if (ie.IgnoredError.EmptyCellReference)
+                    {
+                        elem.Add(new XAttribute("emptyCellReference", 1));
+                    }
+
+                    if (ie.IgnoredError.ListDataValidation)
+                    {
+                        elem.Add(new XAttribute("listDataValidation", 1));
+                    }
+
+                    if (ie.IgnoredError.CalculatedColumn)
+                    {
+                        elem.Add(new XAttribute("calculatedColumn", 1));
+                    }
+
                     igElem.Add(elem);
                 }
 
-                doc.Root.Add(igElem);
+                doc.Root?.Add(igElem);
             }
 
-            private static Dictionary<int, XlsxRow> GetXlsxRows(Worksheet sheet, IList<XlsxCellStyle> styles, SharedStrings sharedStrings)
+            private static Dictionary<int, XlsxRow> GetXlsxRows(Worksheet sheet, IList<XlsxCellStyle> styles,
+                SharedStrings sharedStrings)
             {
                 var rows = new Dictionary<int, XlsxRow>();
-                if(!Enum.IsDefined(typeof(LargeNumberHandlingMode), sheet.LargeNumberHandlingMode))
+                if (!Enum.IsDefined(typeof(LargeNumberHandlingMode), sheet.LargeNumberHandlingMode))
                 {
-                    throw new InvalidOperationException($"Invalid value for {nameof(Worksheet.LargeNumberHandlingMode)} in sheet {sheet.Name}: {sheet.LargeNumberHandlingMode}");
+                    throw new InvalidOperationException(
+                        $"Invalid value for {nameof(Worksheet.LargeNumberHandlingMode)} in sheet {sheet.Name}: {sheet.LargeNumberHandlingMode}");
                 }
 
                 // The order matters!
@@ -595,7 +689,7 @@ namespace Simplexcel.XlsxInternal
                 {
                     if (!rows.ContainsKey(cell.Key.Row))
                     {
-                        rows[cell.Key.Row] = new XlsxRow { RowIndex = cell.Key.Row + 1 };
+                        rows[cell.Key.Row] = new XlsxRow {RowIndex = cell.Key.Row + 1};
                     }
 
                     var styleIndex = styles.IndexOf(cell.Value.XlsxCellStyle) + 1;
@@ -610,47 +704,55 @@ namespace Simplexcel.XlsxInternal
                     {
                         case CellType.Text:
                             xc.CellType = XlsxCellTypes.SharedString;
-                            xc.Value = sharedStrings.GetStringIndex((string)cell.Value.Value);
+                            xc.Value = sharedStrings.GetStringIndex((string) cell.Value.Value);
                             break;
                         case CellType.Formula:
                             xc.CellType = XlsxCellTypes.FormulaString;
-                            xc.Value = (string)cell.Value.Value;
+                            xc.Value = (string) cell.Value.Value;
                             break;
                         case CellType.Number:
                             // Fun: Excel can't handle large numbers as numbers
                             // https://support.microsoft.com/en-us/help/2643223/long-numbers-are-displayed-incorrectly-in-excel
-                            var numVal = (Decimal)cell.Value.Value;
-                            if (sheet.LargeNumberHandlingMode != LargeNumberHandlingMode.None && Cell.IsLargeNumber(numVal))
+                            var numVal = Convert.ToDecimal(cell.Value.Value);
+                            if (sheet.LargeNumberHandlingMode != LargeNumberHandlingMode.None &&
+                                Cell.IsLargeNumber(numVal))
                             {
                                 switch (sheet.LargeNumberHandlingMode)
                                 {
                                     case LargeNumberHandlingMode.StoreAsText:
                                         xc.CellType = XlsxCellTypes.SharedString;
-                                        xc.Value = sharedStrings.GetStringIndex(numVal.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                                        xc.Value = sharedStrings.GetStringIndex(
+                                            numVal.ToString(System.Globalization.CultureInfo.InvariantCulture));
                                         break;
                                     default:
-                                        throw new InvalidOperationException("Unhandled LargeNumberHandlingMode: " + sheet.LargeNumberHandlingMode);
+                                        throw new InvalidOperationException(
+                                            "Unhandled LargeNumberHandlingMode: " + sheet.LargeNumberHandlingMode);
                                 }
                             }
                             else
                             {
                                 xc.CellType = XlsxCellTypes.Number;
-                                xc.Value = ((Decimal)cell.Value.Value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                xc.Value = Convert.ToDecimal(cell.Value.Value)
+                                    .ToString(System.Globalization.CultureInfo.InvariantCulture);
                             }
+
                             break;
                         case CellType.Date:
                             xc.CellType = XlsxCellTypes.Number;
                             if (cell.Value.Value != null)
                             {
-                                xc.Value = ((DateTime)cell.Value.Value).ToOleAutDate();
+                                xc.Value = ((DateTime) cell.Value.Value).ToOleAutDate();
                             }
+
                             break;
                         default:
-                            throw new ArgumentException("Unknown Cell Type: " + cell.Value.CellType + " in cell " + cell.Key.ToString() + " of " + sheet.Name);
+                            throw new ArgumentException("Unknown Cell Type: " + cell.Value.CellType + " in cell " +
+                                                        cell.Key.ToString() + " of " + sheet.Name);
                     }
 
                     rows[cell.Key.Row].Cells.Add(xc);
                 }
+
                 return rows;
             }
         }

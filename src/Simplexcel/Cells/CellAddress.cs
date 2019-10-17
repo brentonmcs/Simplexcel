@@ -1,4 +1,4 @@
-﻿namespace Simplexcel
+﻿namespace Simplexcel.Cells
 {
     /// <summary>
     /// The zero-based Address of a cell

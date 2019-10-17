@@ -16,7 +16,7 @@ namespace Simplexcel
         /// <summary>
         /// The Worksheets in this Workbook
         /// </summary>
-        public IEnumerable<Worksheet> Sheets { get { return _sheets.AsEnumerable(); } }
+        public IEnumerable<Worksheet> Sheets => _sheets.AsEnumerable();
 
         /// <summary>
         /// The title of the Workbook

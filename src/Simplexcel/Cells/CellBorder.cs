@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Simplexcel
+namespace Simplexcel.Cells
 {
     /// <summary>
     /// Border around a cell
@@ -33,6 +33,10 @@ namespace Simplexcel
         /// </summary>
         Left = 8,
 
+        /// <summary>
+        /// Border on the Top and Bottom
+        /// </summary>
+        TopAndBottom = Top + Bottom,
         /// <summary>
         /// Borders on all four sides
         /// </summary>

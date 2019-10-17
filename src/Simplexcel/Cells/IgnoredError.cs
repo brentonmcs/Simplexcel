@@ -1,4 +1,5 @@
-﻿namespace Simplexcel
+﻿// ReSharper disable NonReadonlyMemberInGetHashCode
+namespace Simplexcel.Cells
 {
     /// <summary>
     /// Information about Errors that are being ignored in a cell
@@ -66,7 +67,7 @@
         {
             // This is like a bit field, since an int is 32-Bit and this class is all booleans
             var result = 0;
-            if (EvalError) { result |= (1 << 0); }
+            if (EvalError) { result |= 1 << 0; }
             if (TwoDigitTextYear) { result |= (1 << 1); }
             if (NumberStoredAsText) { result |= (1 << 2); }
             if (Formula) { result |= (1 << 3); }

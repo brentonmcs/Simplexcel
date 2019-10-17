@@ -1,4 +1,4 @@
-﻿namespace Simplexcel
+﻿namespace Simplexcel.Cells
 {
     /// <summary>
     /// The Horizontal Alignment of content within a Cell

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Simplexcel.Cells;
 
 namespace Simplexcel
 {
@@ -8,12 +9,6 @@ namespace Simplexcel
     /// </summary>
     public sealed partial class Worksheet
     {
-        private readonly CellCollection _cells = new CellCollection();
-
-        private readonly ColumnWidthCollection _columnWidth = new ColumnWidthCollection();
-
-        private readonly PageSetup _pageSetup = new PageSetup();
-
         private List<SheetView> _sheetViews;
         private List<PageBreak> _rowBreaks;
         private List<PageBreak> _columnBreaks;
@@ -24,7 +19,7 @@ namespace Simplexcel
         /// <remarks>
         /// These chars are not part of the ECMA-376 standard, but imposed by Excel
         /// </remarks>
-        public static readonly char[] InvalidSheetNameChars = new[] { '\\', '/', '?', '*', '[', ']' };
+        private static readonly char[] InvalidSheetNameChars = { '\\', '/', '?', '*', '[', ']' };
 
         /// <summary>
         /// Get the maximum allowable length for a sheet name
@@ -32,7 +27,7 @@ namespace Simplexcel
         /// <remarks>
         /// This limit is not part of the ECMA-376 standard, but imposed by Excel
         /// </remarks>
-        public static readonly int MaxSheetNameLength = 31;
+        private static readonly int MaxSheetNameLength = 31;
 
         /// <summary>
         /// Create a new Worksheet with the given name
@@ -68,31 +63,22 @@ namespace Simplexcel
         /// <summary>
         /// The Page Orientation and some other related values
         /// </summary>
-        public PageSetup PageSetup
-        {
-            get { return _pageSetup; }
-        }
+        public PageSetup PageSetup { get; } = new PageSetup();
 
         /// <summary>
         /// The Cells of the Worksheet (zero based, [0,0] = A1)
         /// </summary>
-        public CellCollection Cells
-        {
-            get { return _cells; }
-        }
+        public CellCollection Cells { get; } = new CellCollection();
 
         /// <summary>
-        /// The Width of individual columns (Zero-based, in Excel's Units)
+        /// The Width of individual columns (Zero-based, in Excels Units)
         /// </summary>
-        public ColumnWidthCollection ColumnWidths
-        {
-            get { return _columnWidth; }
-        }
+        public ColumnWidthCollection ColumnWidths { get; } = new ColumnWidthCollection();
 
         /// <summary>
         /// How to handle numbers that are larger than <see cref="Cell.LargeNumberPositiveLimit"/> or smaller than <see cref="Cell.LargeNumberNegativeLimit"/>?
         /// </summary>
-        public LargeNumberHandlingMode LargeNumberHandlingMode { get; set; }
+        public LargeNumberHandlingMode LargeNumberHandlingMode { get; }
 
         /// <summary>
         /// Get the cell with the given cell reference, e.g. Get the cell "A1". May return NULL.
@@ -101,8 +87,8 @@ namespace Simplexcel
         /// <returns>The Cell, or NULL of the Cell hasn't been created yet.</returns>
         public Cell this[string address]
         {
-            get { return Cells[address]; }
-            set { Cells[address] = value; }
+            get => Cells[address];
+            set => Cells[address] = value;
         }
 
         /// <summary>
@@ -113,8 +99,8 @@ namespace Simplexcel
         /// <returns>The Cell, or NULL of the Cell hasn't been created yet.</returns>
         public Cell this[int row, int column]
         {
-            get { return Cells[row, column]; }
-            set { Cells[row, column] = value; }
+            get => Cells[row, column];
+            set => Cells[row, column] = value;
         }
 
         /// <summary>

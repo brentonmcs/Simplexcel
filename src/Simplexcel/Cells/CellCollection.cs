@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Simplexcel
+namespace Simplexcel.Cells
 {
     /// <summary>
     /// A Collection of <see cref="Cell">Cells</see>
@@ -33,8 +33,8 @@ namespace Simplexcel
         /// <returns>The Cell, or NULL of the Cell hasn't been created yet.</returns>
         public Cell this[string address]
         {
-            get { return this[new CellAddress(address)]; }
-            set { this[new CellAddress(address)] = value; }
+            get => this[new CellAddress(address)];
+            set => this[new CellAddress(address)] = value;
         }
 
         /// <summary>
@@ -45,8 +45,8 @@ namespace Simplexcel
         /// <returns>The Cell, or NULL of the Cell hasn't been created yet.</returns>
         public Cell this[int row, int column]
         {
-            get { return this[new CellAddress(row, column)]; }
-            set { this[new CellAddress(row, column)] = value; }
+            get => this[new CellAddress(row, column)];
+            set => this[new CellAddress(row, column)] = value;
         }
 
         private Cell this[CellAddress key]
@@ -58,7 +58,7 @@ namespace Simplexcel
 
                 return _cells[key];
             }
-            set { _cells[key] = value; }
+            set => _cells[key] = value;
         }
 
         /// <summary>

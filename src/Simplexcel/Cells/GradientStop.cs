@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Simplexcel
+namespace Simplexcel.Cells
 {
     internal class GradientStop : IEquatable<GradientStop>
     {

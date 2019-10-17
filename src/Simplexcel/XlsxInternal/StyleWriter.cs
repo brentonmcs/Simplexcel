@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using Simplexcel.Cells;
 
 namespace Simplexcel.XlsxInternal
 {
@@ -17,10 +18,11 @@ namespace Simplexcel.XlsxInternal
         internal static XmlFile CreateStyleXml(IList<XlsxCellStyle> styles)
         {
             var numberFormats = new List<string>();
-            var uniqueBorders = new List<CellBorder> { CellBorder.None };
-            var uniqueFonts = new List<XlsxFont> { new XlsxFont() };
+            var uniqueBorders = new List<CellBorder> {CellBorder.None};
+            var uniqueFonts = new List<XlsxFont> {new XlsxFont()};
             // These two fills MUST exist as fill 0 (None) and 1 (Gray125)
-            var uniqueFills = new List<PatternFill> { new PatternFill { PatternType = PatternType.None }, new PatternFill { PatternType = PatternType.Gray125 } };
+            var uniqueFills = new List<PatternFill>
+                {new PatternFill {PatternType = PatternType.None}, new PatternFill {PatternType = PatternType.Gray125}};
 
             foreach (var style in styles)
             {
@@ -51,7 +53,8 @@ namespace Simplexcel.XlsxInternal
                 Path = "xl/styles.xml"
             };
 
-            var doc = new XDocument(new XElement(Namespaces.workbook + "styleSheet", new XAttribute("xmlns", Namespaces.workbook)));
+            var doc = new XDocument(new XElement(Namespaces.workbook + "styleSheet",
+                new XAttribute("xmlns", Namespaces.workbook)));
 
             StyleAddNumFmtsElement(doc, numberFormats);
             StyleAddFontsElement(doc, uniqueFonts);
@@ -65,17 +68,19 @@ namespace Simplexcel.XlsxInternal
             return file;
         }
 
-        private static void StyleAddCellXfsElement(XDocument doc, IList<XlsxCellStyle> styles, IList<CellBorder> uniqueBorders, IList<string> numberFormats, IList<XlsxFont> fontInfos, IList<PatternFill> fills)
+        private static void StyleAddCellXfsElement(XDocument doc, IList<XlsxCellStyle> styles,
+            IList<CellBorder> uniqueBorders, IList<string> numberFormats, IList<XlsxFont> fontInfos,
+            IList<PatternFill> fills)
         {
             var cellXfs = new XElement(Namespaces.workbook + "cellXfs", new XAttribute("count", styles.Count));
 
             // Default Cell Style, used to make sure the row numbers don't appear broken
             cellXfs.Add(new XElement(Namespaces.workbook + "xf",
-                                     new XAttribute("numFmtId", 0),
-                                     new XAttribute("fontId", 0),
-                                     new XAttribute("fillId", 0),
-                                     new XAttribute("borderId", 0),
-                                     new XAttribute("xfId", 0)));
+                new XAttribute("numFmtId", 0),
+                new XAttribute("fontId", 0),
+                new XAttribute("fillId", 0),
+                new XAttribute("borderId", 0),
+                new XAttribute("xfId", 0)));
 
             foreach (var style in styles)
             {
@@ -86,24 +91,27 @@ namespace Simplexcel.XlsxInternal
                 var xfId = 0;
 
                 var elem = new XElement(Namespaces.workbook + "xf",
-                                        new XAttribute("numFmtId", numFmtId),
-                                        new XAttribute("fontId", fontId),
-                                        new XAttribute("fillId", fillId),
-                                        new XAttribute("borderId", borderId),
-                                        new XAttribute("xfId", xfId));
+                    new XAttribute("numFmtId", numFmtId),
+                    new XAttribute("fontId", fontId),
+                    new XAttribute("fillId", fillId),
+                    new XAttribute("borderId", borderId),
+                    new XAttribute("xfId", xfId));
 
                 if (numFmtId > 0)
                 {
                     elem.Add(new XAttribute("applyNumberFormat", 1));
                 }
+
                 if (fillId > 0)
                 {
                     elem.Add(new XAttribute("applyFill", 1));
                 }
+
                 if (fontId > 0)
                 {
                     elem.Add(new XAttribute("applyFont", 1));
                 }
+
                 if (borderId > 0)
                 {
                     elem.Add(new XAttribute("applyBorder", 1));
@@ -113,12 +121,13 @@ namespace Simplexcel.XlsxInternal
 
                 cellXfs.Add(elem);
             }
-            doc.Root.Add(cellXfs);
+
+            doc.Root?.Add(cellXfs);
         }
 
         private static void AddAlignmentElement(XElement elem, XlsxCellStyle style)
         {
-            if(elem == null)
+            if (elem == null)
             {
                 throw new ArgumentNullException(nameof(elem));
             }
@@ -128,16 +137,23 @@ namespace Simplexcel.XlsxInternal
                 throw new ArgumentNullException(nameof(style));
             }
 
-            if (style.HorizontalAlignment == HorizontalAlign.None && style.VerticalAlignment == VerticalAlign.None)
+            if (style.HorizontalAlignment == HorizontalAlign.None && style.VerticalAlignment == VerticalAlign.None &&
+                !style.WrapText)
             {
                 return;
             }
 
             var alignElem = new XElement(Namespaces.workbook + "alignment");
-            if(style.HorizontalAlignment != HorizontalAlign.None)
+
+            if (style.WrapText)
+            {
+                alignElem.Add(new XAttribute("wrapText", 1));
+            }
+
+            if (style.HorizontalAlignment != HorizontalAlign.None)
             {
                 string value;
-                switch(style.HorizontalAlignment)
+                switch (style.HorizontalAlignment)
                 {
                     case HorizontalAlign.General:
                         value = "general";
@@ -155,8 +171,10 @@ namespace Simplexcel.XlsxInternal
                         value = "justify";
                         break;
                     default:
-                        throw new InvalidOperationException("Unhandled HorizontalAlignment in Cell Style: " + style.HorizontalAlignment);
+                        throw new InvalidOperationException("Unhandled HorizontalAlignment in Cell Style: " +
+                                                            style.HorizontalAlignment);
                 }
+
                 alignElem.Add(new XAttribute("horizontal", value));
             }
 
@@ -178,8 +196,10 @@ namespace Simplexcel.XlsxInternal
                         value = "justify";
                         break;
                     default:
-                        throw new InvalidOperationException("Unhandled VerticalAlignment in Cell Style: " + style.VerticalAlignment);
+                        throw new InvalidOperationException("Unhandled VerticalAlignment in Cell Style: " +
+                                                            style.VerticalAlignment);
                 }
+
                 alignElem.Add(new XAttribute("vertical", value));
             }
 
@@ -189,22 +209,25 @@ namespace Simplexcel.XlsxInternal
         private static void StyleAddCellStyleXfsElement(XDocument doc)
         {
             var cellStyleXfs = new XElement(Namespaces.workbook + "cellStyleXfs", new XAttribute("count", 1));
-            cellStyleXfs.Add(new XElement(Namespaces.workbook + "xf", new XAttribute("numFmtId", 0), new XAttribute("fontId", 0), new XAttribute("fillId", 0), new XAttribute("borderId", 0)));
-            doc.Root.Add(cellStyleXfs);
+            cellStyleXfs.Add(new XElement(Namespaces.workbook + "xf", new XAttribute("numFmtId", 0),
+                new XAttribute("fontId", 0), new XAttribute("fillId", 0), new XAttribute("borderId", 0)));
+            doc.Root?.Add(cellStyleXfs);
         }
 
         private static void StyleAddNumFmtsElement(XDocument doc, List<string> numberFormats)
         {
-            var numFmtsElem = new XElement(Namespaces.workbook + "numFmts", new XAttribute("count", numberFormats.Count + 1));
+            var numFmtsElem = new XElement(Namespaces.workbook + "numFmts",
+                new XAttribute("count", numberFormats.Count + 1));
 
             for (int i = 0; i < numberFormats.Count; i++)
             {
                 var fmtElem = new XElement(Namespaces.workbook + "numFmt",
-                                           new XAttribute("numFmtId", i + CustomFormatIndex),
-                                           new XAttribute("formatCode", numberFormats[i]));
+                    new XAttribute("numFmtId", i + CustomFormatIndex),
+                    new XAttribute("formatCode", numberFormats[i]));
                 numFmtsElem.Add(fmtElem);
             }
-            doc.Root.Add(numFmtsElem);
+
+            doc.Root?.Add(numFmtsElem);
         }
 
         private static void StyleAddBordersElement(XDocument doc, List<CellBorder> uniqueBorders)
@@ -220,6 +243,7 @@ namespace Simplexcel.XlsxInternal
                     left.Add(new XAttribute("style", "thin"));
                     left.Add(new XElement(Namespaces.workbook + "color", new XAttribute("auto", 1)));
                 }
+
                 bex.Add(left);
 
                 var right = new XElement(Namespaces.workbook + "right");
@@ -228,6 +252,7 @@ namespace Simplexcel.XlsxInternal
                     right.Add(new XAttribute("style", "thin"));
                     right.Add(new XElement(Namespaces.workbook + "color", new XAttribute("auto", 1)));
                 }
+
                 bex.Add(right);
 
                 var top = new XElement(Namespaces.workbook + "top");
@@ -236,6 +261,7 @@ namespace Simplexcel.XlsxInternal
                     top.Add(new XAttribute("style", "thin"));
                     top.Add(new XElement(Namespaces.workbook + "color", new XAttribute("auto", 1)));
                 }
+
                 bex.Add(top);
 
                 var bottom = new XElement(Namespaces.workbook + "bottom");
@@ -244,13 +270,15 @@ namespace Simplexcel.XlsxInternal
                     bottom.Add(new XAttribute("style", "thin"));
                     bottom.Add(new XElement(Namespaces.workbook + "color", new XAttribute("auto", 1)));
                 }
+
                 bex.Add(bottom);
 
                 bex.Add(new XElement(Namespaces.workbook + "diagonal"));
 
                 borders.Add(bex);
             }
-            doc.Root.Add(borders);
+
+            doc.Root?.Add(borders);
         }
 
         private static void StyleAddFillsElement(XDocument doc, List<PatternFill> uniqueFills)
@@ -266,35 +294,75 @@ namespace Simplexcel.XlsxInternal
                     string patternType = "none";
                     switch (pf.PatternType)
                     {
-                        case PatternType.Solid: patternType = "solid"; break;
-                        case PatternType.Gray750: patternType = "darkGray"; break;
-                        case PatternType.Gray500: patternType = "mediumGray"; break;
-                        case PatternType.Gray250: patternType = "lightGray"; break;
-                        case PatternType.Gray125: patternType = "gray125"; break;
-                        case PatternType.Gray0625: patternType = "gray0625"; break;
-                        case PatternType.HorizontalStripe: patternType = "darkHorizontal"; break;
-                        case PatternType.VerticalStripe: patternType = "darkVertical"; break;
-                        case PatternType.ReverseDiagonalStripe: patternType = "darkDown"; break;
-                        case PatternType.DiagonalStripe: patternType = "darkUp"; break;
-                        case PatternType.DiagonalCrosshatch: patternType = "darkGrid"; break;
-                        case PatternType.ThickDiagonalCrosshatch: patternType = "darkTrellis"; break;
-                        case PatternType.ThinHorizontalStripe: patternType = "lightHorizontal"; break;
-                        case PatternType.ThinVerticalStripe: patternType = "lightVertical"; break;
-                        case PatternType.ThinReverseDiagonalStripe: patternType = "lightDown"; break;
-                        case PatternType.ThinDiagonalStripe: patternType = "lightUp"; break;
-                        case PatternType.ThinHorizontalCrosshatch: patternType = "lightGrid"; break;
-                        case PatternType.ThinDiagonalCrosshatch: patternType = "lightTrellis"; break;
+                        case PatternType.Solid:
+                            patternType = "solid";
+                            break;
+                        case PatternType.Gray750:
+                            patternType = "darkGray";
+                            break;
+                        case PatternType.Gray500:
+                            patternType = "mediumGray";
+                            break;
+                        case PatternType.Gray250:
+                            patternType = "lightGray";
+                            break;
+                        case PatternType.Gray125:
+                            patternType = "gray125";
+                            break;
+                        case PatternType.Gray0625:
+                            patternType = "gray0625";
+                            break;
+                        case PatternType.HorizontalStripe:
+                            patternType = "darkHorizontal";
+                            break;
+                        case PatternType.VerticalStripe:
+                            patternType = "darkVertical";
+                            break;
+                        case PatternType.ReverseDiagonalStripe:
+                            patternType = "darkDown";
+                            break;
+                        case PatternType.DiagonalStripe:
+                            patternType = "darkUp";
+                            break;
+                        case PatternType.DiagonalCrosshatch:
+                            patternType = "darkGrid";
+                            break;
+                        case PatternType.ThickDiagonalCrosshatch:
+                            patternType = "darkTrellis";
+                            break;
+                        case PatternType.ThinHorizontalStripe:
+                            patternType = "lightHorizontal";
+                            break;
+                        case PatternType.ThinVerticalStripe:
+                            patternType = "lightVertical";
+                            break;
+                        case PatternType.ThinReverseDiagonalStripe:
+                            patternType = "lightDown";
+                            break;
+                        case PatternType.ThinDiagonalStripe:
+                            patternType = "lightUp";
+                            break;
+                        case PatternType.ThinHorizontalCrosshatch:
+                            patternType = "lightGrid";
+                            break;
+                        case PatternType.ThinDiagonalCrosshatch:
+                            patternType = "lightTrellis";
+                            break;
                     }
+
                     pfe.Add(new XAttribute("patternType", patternType));
 
                     if (pf.BackgroundColor.HasValue)
                     {
                         // Not a typo. Excel calls the fgColor "Background Color" in the UI, and the bgColor "Pattern Color"
-                        pfe.Add(new XElement(Namespaces.workbook + "fgColor", new XAttribute("rgb", pf.BackgroundColor.Value)));
+                        pfe.Add(new XElement(Namespaces.workbook + "fgColor",
+                            new XAttribute("rgb", pf.BackgroundColor.Value)));
                     }
+
                     if (pf.PatternColor.HasValue)
                     {
-                        pfe.Add(new XElement(Namespaces.workbook + "bgColor", new XAttribute("rgb", pf.PatternColor.Value)));
+                        pfe.Add(new XElement(Namespaces.workbook + "bgColor",
+                            new XAttribute("rgb", pf.PatternColor.Value)));
                     }
                     else if (pf.BackgroundColor.HasValue)
                     {
@@ -304,13 +372,15 @@ namespace Simplexcel.XlsxInternal
 
                     fe.Add(pfe);
                 }
+
                 //else if (fill is GradientFill gf)
                 //{
-                    // TODO: Not Yet Implemented
+                // TODO: Not Yet Implemented
                 //}
                 fills.Add(fe);
             }
-            doc.Root.Add(fills);
+
+            doc.Root?.Add(fills);
         }
 
         private static void StyleAddFontsElement(XDocument doc, IList<XlsxFont> fontInfos)
@@ -320,18 +390,30 @@ namespace Simplexcel.XlsxInternal
             foreach (var font in fontInfos)
             {
                 var elem = new XElement(Namespaces.workbook + "font",
-                                       new XElement(Namespaces.workbook + "sz", new XAttribute("val", font.Size)),
-                                       new XElement(Namespaces.workbook + "name", new XAttribute("val", font.Name)),
-                                       new XElement(Namespaces.workbook + "color", new XAttribute("rgb", font.TextColor))
-                                  );
+                    new XElement(Namespaces.workbook + "sz", new XAttribute("val", font.Size)),
+                    new XElement(Namespaces.workbook + "name", new XAttribute("val", font.Name)),
+                    new XElement(Namespaces.workbook + "color", new XAttribute("rgb", font.TextColor))
+                );
 
-                if (font.Bold) { elem.Add(new XElement(Namespaces.workbook + "b")); }
-                if (font.Italic) { elem.Add(new XElement(Namespaces.workbook + "i")); }
-                if (font.Underline) { elem.Add(new XElement(Namespaces.workbook + "u")); }
+                if (font.Bold)
+                {
+                    elem.Add(new XElement(Namespaces.workbook + "b"));
+                }
+
+                if (font.Italic)
+                {
+                    elem.Add(new XElement(Namespaces.workbook + "i"));
+                }
+
+                if (font.Underline)
+                {
+                    elem.Add(new XElement(Namespaces.workbook + "u"));
+                }
 
                 fonts.Add(elem);
             }
-            doc.Root.Add(fonts);
+
+            doc.Root?.Add(fonts);
         }
     }
 }

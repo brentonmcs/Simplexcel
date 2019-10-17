@@ -1,4 +1,4 @@
-﻿namespace Simplexcel
+﻿namespace Simplexcel.Cells
 {
     /// <summary>
     /// The Type of a Cell, important for handling the values corrently (e.g., Excel not converting long numbers into scientific notation or removing leading zeroes)

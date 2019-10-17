@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Simplexcel.Cells;
 
 namespace Simplexcel.XlsxInternal
 {
